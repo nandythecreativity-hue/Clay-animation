@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Quicksand", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-clay-bg: #FDFBF9;
+  --color-clay-sand: #E8D8C4;
+  --color-clay-earth: #A68A64;
+  --color-clay-sky: #B8D8D8;
+  --color-clay-accent: #D97757;
+  --color-clay-text: #4A3728;
+}
+
+@layer base {
+  body {
+    @apply bg-clay-bg text-clay-text font-sans;
+    background-image: radial-gradient(circle at 10% 20%, rgba(232, 216, 196, 0.3) 0%, transparent 40%),
+                      radial-gradient(circle at 90% 80%, rgba(184, 216, 216, 0.3) 0%, transparent 40%);
+  }
+}
+
+.clay-card {
+  @apply bg-white/80 backdrop-blur-md rounded-[2rem] border border-white shadow-[0_8px_32px_rgba(217,119,87,0.1)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_40px_rgba(217,119,87,0.2)];
+}
+
+.clay-button-primary {
+  @apply px-6 py-3 rounded-2xl font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:pointer-events-none bg-clay-accent text-white shadow-[0_4px_15px_rgba(217,119,87,0.4)] hover:shadow-[0_6px_20px_rgba(217,119,87,0.6)];
+}
+
+.clay-button-primary:hover {
+  @apply -translate-y-0.5 brightness-110;
+}
+
+.clay-button-secondary {
+  @apply px-6 py-3 rounded-2xl font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:pointer-events-none bg-clay-sky/30 text-clay-text border border-clay-sky/50;
+}
+
+.clay-button-secondary:hover {
+  @apply bg-clay-sky/50 shadow-[0_4px_15px_rgba(184,216,216,0.4)];
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-clay-accent/20 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-clay-accent/40;
+}
