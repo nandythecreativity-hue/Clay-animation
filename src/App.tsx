@@ -30,7 +30,8 @@ import {
   Plus,
   Minus,
   ExternalLink,
-  Layout
+  Layout,
+  Key
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
@@ -126,7 +127,7 @@ export default function App() {
 
   const formatErrorMessage = (err: string) => {
     if (err.includes("429") || err.includes("RESOURCE_EXHAUSTED") || err.includes("quota")) {
-      return "The AI system is currently very busy or you've reached the free tier limit. Please wait a few moments and try again.";
+      return "The AI system is currently very busy or you've reached the free tier limit. Tip: You can add up to 5 API keys in the AI Studio Settings to balance the load.";
     }
     if (err.includes("503") || err.includes("UNAVAILABLE")) {
       return "The AI service is temporarily unavailable. Retrying automatically...";
@@ -1248,8 +1249,15 @@ export default function App() {
       </main>
 
       {/* Footer Info */}
-      <footer className="mt-20 text-center text-slate-400 text-sm">
+      <footer className="mt-20 pb-10 text-center text-slate-400 text-sm">
         <p>© 2026 Clay Animation Generator • by Nandi Arzhanka</p>
+        <button 
+          onClick={() => window.aistudio.openSelectKey()}
+          className="mt-4 text-xs font-bold text-clay-accent/60 hover:text-clay-accent transition-colors flex items-center gap-1 mx-auto"
+        >
+          <Key size={12} />
+          Change API Key
+        </button>
       </footer>
     </div>
   );
