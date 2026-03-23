@@ -64,6 +64,7 @@ export default function App() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGeneratingStoryboard, setIsGeneratingStoryboard] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState(CLAY_THEMES[0]);
   const [selectedQuality, setSelectedQuality] = useState<Quality>("2K");
@@ -133,6 +134,7 @@ export default function App() {
     if (!hasKey) return;
 
     setIsProcessing(true);
+    if (activeMode === "storyboard") setIsGeneratingStoryboard(true);
     setError(null);
     
     try {
@@ -216,14 +218,14 @@ export default function App() {
         };
 
         // Generate scenes in batches to avoid rate limits
-        const BATCH_SIZE = 2;
+        const BATCH_SIZE = 3; // Increased from 2
         for (let i = 0; i < initialScenes.length; i += BATCH_SIZE) {
           const batch = initialScenes.slice(i, i + BATCH_SIZE);
           await Promise.all(batch.map((_, idx) => processScene(i + idx)));
           
           // Small delay between batches to let API breathe
           if (i + BATCH_SIZE < initialScenes.length) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000
           }
         }
 
@@ -236,6 +238,7 @@ export default function App() {
       }
     } finally {
       setIsProcessing(false);
+      setIsGeneratingStoryboard(false);
     }
   };
 
@@ -1035,7 +1038,7 @@ export default function App() {
                   </div>
                 )}
 
-                {isProcessing && (
+                {isGeneratingStoryboard && (
                   <div className="py-20 text-center space-y-6">
                     <div className="relative w-32 h-32 mx-auto">
                       <motion.div 
@@ -1227,7 +1230,7 @@ export default function App() {
 
       {/* Footer Info */}
       <footer className="mt-20 text-center text-slate-400 text-sm">
-        <p>© 2026 Clay Animation Generator • Powered by Google Gemini AI</p>
+        <p>© 2026 Clay Animation Generator • by Nandi Arzhanka</p>
       </footer>
     </div>
   );

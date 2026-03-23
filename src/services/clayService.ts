@@ -44,7 +44,7 @@ export interface GenerationState {
   aspectRatio: AspectRatio;
 }
 
-async function withRetry<T>(fn: (attempt: number) => Promise<T>, maxRetries = 10, initialDelay = 2000): Promise<T> {
+async function withRetry<T>(fn: (attempt: number) => Promise<T>, maxRetries = 5, initialDelay = 1000): Promise<T> {
   let lastError: any;
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -52,24 +52,20 @@ async function withRetry<T>(fn: (attempt: number) => Promise<T>, maxRetries = 10
     } catch (err: any) {
       lastError = err;
       
-      // Stringify error to check for codes/messages in complex objects
       const errStr = typeof err === 'string' ? err : JSON.stringify(err);
       const is503 = errStr.includes('503') || errStr.includes('UNAVAILABLE') || err?.status === 503 || err?.error?.code === 503;
       const isDeadline = errStr.includes('Deadline') || errStr.includes('expired') || err?.error?.message?.includes('Deadline');
       const isOverloaded = errStr.includes('overloaded') || errStr.includes('429') || err?.status === 429 || errStr.includes('Resource has been exhausted');
       
       if (is503 || isDeadline || isOverloaded || errStr.includes('Internal error')) {
-        // Jittered exponential backoff
-        const delay = (initialDelay * Math.pow(1.5, i)) + (Math.random() * 500);
-        console.warn(`Attempt ${i + 1} failed with ${is503 ? '503' : isDeadline ? 'Deadline' : 'Overload'}. Retrying in ${Math.round(delay)}ms...`);
+        const delay = (initialDelay * Math.pow(1.3, i)) + (Math.random() * 300);
+        console.warn(`Attempt ${i + 1} failed. Retrying in ${Math.round(delay)}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
-      console.error("Non-retryable error encountered:", err);
       throw err;
     }
   }
-  console.error(`Failed after ${maxRetries} attempts. Last error:`, lastError);
   throw lastError;
 }
 
