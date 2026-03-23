@@ -44,7 +44,7 @@ export interface GenerationState {
   aspectRatio: AspectRatio;
 }
 
-async function withRetry<T>(fn: (attempt: number) => Promise<T>, maxRetries = 5, initialDelay = 1000): Promise<T> {
+async function withRetry<T>(fn: (attempt: number) => Promise<T>, maxRetries = 8, initialDelay = 2000): Promise<T> {
   let lastError: any;
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -53,12 +53,21 @@ async function withRetry<T>(fn: (attempt: number) => Promise<T>, maxRetries = 5,
       lastError = err;
       
       const errStr = typeof err === 'string' ? err : JSON.stringify(err);
-      const is503 = errStr.includes('503') || errStr.includes('UNAVAILABLE') || err?.status === 503 || err?.error?.code === 503;
-      const isDeadline = errStr.includes('Deadline') || errStr.includes('expired') || err?.error?.message?.includes('Deadline');
-      const isOverloaded = errStr.includes('overloaded') || errStr.includes('429') || err?.status === 429 || errStr.includes('Resource has been exhausted');
+      const is429 = errStr.includes('429') || err?.status === 429 || errStr.includes('RESOURCE_EXHAUSTED');
+      const is503 = errStr.includes('503') || errStr.includes('UNAVAILABLE') || err?.status === 503;
+      const isDeadline = errStr.includes('Deadline') || errStr.includes('expired');
       
-      if (is503 || isDeadline || isOverloaded || errStr.includes('Internal error')) {
-        const delay = (initialDelay * Math.pow(1.3, i)) + (Math.random() * 300);
+      if (is429 || is503 || isDeadline || errStr.includes('Internal error')) {
+        // Try to extract retry delay from the error message if provided by Gemini
+        let delay = (initialDelay * Math.pow(2, i)) + (Math.random() * 500);
+        
+        // Look for "retry in X.Xs" or similar in the error string
+        const retryMatch = errStr.match(/retry in ([\d.]+)s/i);
+        if (retryMatch && retryMatch[1]) {
+          const serverSuggestedDelay = parseFloat(retryMatch[1]) * 1000;
+          delay = Math.max(delay, serverSuggestedDelay + 500);
+        }
+
         console.warn(`Attempt ${i + 1} failed. Retrying in ${Math.round(delay)}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;

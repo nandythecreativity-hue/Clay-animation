@@ -124,6 +124,16 @@ export default function App() {
     handleGenerate();
   };
 
+  const formatErrorMessage = (err: string) => {
+    if (err.includes("429") || err.includes("RESOURCE_EXHAUSTED") || err.includes("quota")) {
+      return "The AI system is currently very busy or you've reached the free tier limit. Please wait a few moments and try again.";
+    }
+    if (err.includes("503") || err.includes("UNAVAILABLE")) {
+      return "The AI service is temporarily unavailable. Retrying automatically...";
+    }
+    return err;
+  };
+
   const handleGenerate = async (isRevision = false) => {
     if (!originalImage) {
       setError("Please upload a photo first!");
@@ -785,7 +795,7 @@ export default function App() {
               className="p-4 rounded-2xl bg-red-50 text-red-600 text-sm flex items-start gap-3 border border-red-100"
             >
               <AlertCircle size={18} className="shrink-0 mt-0.5" />
-              <p>{error}</p>
+              <p>{formatErrorMessage(error)}</p>
             </motion.div>
           )}
         </div>
@@ -1125,6 +1135,15 @@ export default function App() {
                               <MessageSquare size={14} className="text-clay-accent mt-0.5 shrink-0" />
                               <p className="text-[11px] font-medium text-slate-600 leading-relaxed">
                                 "{scene.dialog}"
+                              </p>
+                            </div>
+                          )}
+
+                          {scene.status === 'failed' && scene.error && (
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-2 flex gap-2 items-start">
+                              <AlertCircle size={14} className="text-red-500 mt-0.5 shrink-0" />
+                              <p className="text-[10px] font-medium text-red-600 leading-relaxed">
+                                {formatErrorMessage(scene.error)}
                               </p>
                             </div>
                           )}
